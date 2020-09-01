@@ -24,6 +24,8 @@ class HashTable:
         # Your code here
         self.capacity = MIN_CAPACITY
         self.table = [None] * capacity
+        self.num_of_items = 0
+        self.head = None
 
 
     def get_num_slots(self):
@@ -37,6 +39,8 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        num_of_slots = len(self.table)
+        return num_of_slots
 
 
     def get_load_factor(self):
@@ -46,6 +50,8 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        
+        return self.num_of_items / self.capacity
 
 
     def fnv1(self, key):
@@ -56,15 +62,6 @@ class HashTable:
         """
 
         # Your code here
-
-
-    def djb2(self, key):
-        """
-        DJB2 hash, 32-bit
-
-        Implement this, and/or FNV-1.
-        """
-        # Your code here 
         ### FNV-1
         seed = 0
         FNV_prime = 1099511628211
@@ -75,11 +72,19 @@ class HashTable:
             hash = hash ^ ord(char)
         return hash
 
-        ### DJB2
-        # h = 5381
-        # for c in key[1:]:
-        #     h = (h << 5) + h + ord(c)
-        # return h
+
+    def djb2(self, key):
+        """
+        DJB2 hash, 32-bit
+
+        Implement this, and/or FNV-1.
+        """
+        # Your code here 
+        ## DJB2
+        h = 5381
+        for c in key[1:]:
+            h = (h << 5) + h + ord(c)
+        return h
 
 
 
@@ -99,9 +104,29 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        ## Your code here
         indx = self.hash_index(key)
-        self.table[indx] = value
+        # self.table[indx] = value
+        # new_node = HashTableEntry(key, value)
+
+        ### Day 2
+
+        # if self.get_load_factor() > 0.7:
+        #     self.resize(self.capacity)
+
+        if self.table[indx] == None:
+            self.table[indx] = HashTableEntry(key, value)
+            self.num_of_items += 1
+        else: 
+            cur = self.table[indx]
+            while True:
+                if cur.key == key:
+                    cur.value = value
+                    return 
+                if cur.next == None: break
+                cur = cur.next
+            cur.next = HashTableEntry(key, value)
+
 
 
     def delete(self, key):
@@ -112,13 +137,35 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        # # Your code here
         indx = self.hash_index(key)
-        if self.table[indx] != None:
-            self.table[indx] = None
-        if not self.table[indx]:
-            return "Key not found"
+        # if self.table[indx] != None:
+        #     self.table[indx] = None
+        # if not self.table[indx]:
+        #     return "Key not found"
+
+        ### Day 2
+        cur = self.table[indx]
+        prev = cur
+        if cur is None:
+            return None
+        # special case: delete the head
+        if cur.key == key:
+            old_head = self.table[indx]
+            self.table[indx] = cur.next
+            return old_head
+        # general case
+        prev = cur
+        cur = cur.next
+        while cur is not None:
+            if cur.key == key:
+                prev.next = cur.next
+                return cur
+            prev = cur
+            cur = cur.next
+        return None
             
+        
 
 
     def get(self, key):
@@ -129,23 +176,35 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
-        ind = self.table[self.hash_index(key)]
-        if ind:
+        # # Your code here
+        # indx = self.table[self.hash_index(key)]
+        # if indx:        
+        #     return indx
+        # else:
+        #     return None
+        ind = self.hash_index(key)
+        cur = self.table[ind]
         
-            return ind
-        else:
-            return None
+        while cur:
+            if cur.key == key:
+                return cur.value
+            else:
+                cur = cur.next
+        return None
 
 
     def resize(self, new_capacity):
         """
         Changes the capacity of the hash table and
         rehashes all key/value pairs.
-
+ 
         Implement this.
         """
         # Your code here
+        
+        self.capacity  = new_capacity
+        self.table = [None] * self.capacity
+       
 
 
 
