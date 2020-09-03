@@ -1,5 +1,18 @@
-def word_count(s):
-    # Your code here
+import re
+def word_count(s):       
+    ignore = '":;,.-+=/\\|[]{}()*^&'
+  
+    d = {}
+    for i in ignore:
+        s = s.replace(i, "") 
+    s = s.split() 
+    for word in s:
+        word = word.lower()
+        if word not in d:
+            d[word] = 0
+        d[word] += 1 
+    return d
+
 
 
 
